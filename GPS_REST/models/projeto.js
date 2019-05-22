@@ -5,7 +5,8 @@ module.exports = function(sequelize, DataTypes) {
     idProjeto: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
     Tema: {
       type: DataTypes.STRING(255),

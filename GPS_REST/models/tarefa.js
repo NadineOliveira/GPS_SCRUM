@@ -5,7 +5,8 @@ module.exports = function(sequelize, DataTypes) {
     idTarefa: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
     descricao: {
       type: DataTypes.STRING(255),

@@ -4,8 +4,7 @@ import store from './store.js'
 import Home from './views/Home.vue'
 import About from './views/About.vue'
 import Login from './components/Login.vue'
-import Secure from './components/Secure.vue'
-
+import Projects from './components/Projects.vue'
 
 Vue.use(Router)
 
@@ -23,10 +22,10 @@ let router = new Router({
       component: Login
     },
     {
-      path: '/secure',
-      name: 'secure',
-      component: Secure,
-      meta: { 
+      path: '/projects',
+      name: 'projects',
+      component: Projects,
+      meta: {
         requiresAuth: true
       }
     },
@@ -39,14 +38,14 @@ let router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  if(to.matched.some(record => record.meta.requiresAuth)) {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
     if (store.getters.isLoggedIn) {
       next()
       return
     }
-    next('/login') 
+    next('/login')
   } else {
-    next() 
+    next()
   }
 })
 
