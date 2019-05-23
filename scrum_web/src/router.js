@@ -5,7 +5,7 @@ import Home from './views/Home.vue'
 import About from './views/About.vue'
 import Login from './components/Login.vue'
 import Projects from './components/Projects.vue'
-import Project from './components/Project'
+import Project from '@/views/Project.vue'
 
 Vue.use(Router)
 
@@ -23,17 +23,17 @@ let router = new Router({
       component: Login
     },
     {
-      path: '/projects',
-      name: 'projects',
-      component: Projects,
+      path: '/project/:idProjeto',
+      name: 'project',
+      component: Project,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path: '/project',
-      name: 'project',
-      component: Project,
+      path: '/projects',
+      name: 'projects',
+      component: Projects,
       meta: {
         requiresAuth: true
       }
