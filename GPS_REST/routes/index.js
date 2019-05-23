@@ -52,5 +52,11 @@ router.post('/projeto', passport.authenticate('jwt', {session: false}), async (r
     res.status(200).send(projeto)
 })
 
+router.get('/projetos/remover/:pid', passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.user.username;
+    var id = req.params.pid
+    var resp = await ParticipaController.removeParticipa(id,user);
+    res.status(200).send(resp)
+})
 
 module.exports = router;

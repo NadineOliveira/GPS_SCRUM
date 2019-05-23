@@ -35,6 +35,15 @@
           </v-list-tile-content>
         </v-list-tile>
 
+        <v-list-tile v-if="isLoggedIn" @click="projetos">
+          <v-list-tile-action>
+            <v-icon>reorder</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Projetos</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+
         <v-list-tile v-if="isLoggedIn" @click="logout">
           <v-list-tile-action>
             <v-icon>close</v-icon>
@@ -80,13 +89,16 @@ export default {
         .then(() => {
           this.$router.push('/')
         })
+    },
+    projetos: function () {
+      this.$router.push('/projects')
     }
   },
   created: function () {
     this.$http.interceptors.response.use(undefined, function (err) {
       return new Promise(function (resolve, reject) {
         if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
-          this.$store.dispatch(logout)
+          this.$store.dispatch('logout')
         }
         throw err
       })

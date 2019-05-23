@@ -60,7 +60,7 @@ export default {
       let username = this.username
       let password = this.password
       this.$store.dispatch('login', { username, password })
-        .then(() => this.$router.push('/secure'))
+        .then(() => this.$router.push('/projects'))
         .catch(() => {
           this.erro = true
         })

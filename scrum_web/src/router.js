@@ -5,6 +5,7 @@ import Home from './views/Home.vue'
 import About from './views/About.vue'
 import Login from './components/Login.vue'
 import Projects from './components/Projects.vue'
+import Project from './components/Project'
 
 Vue.use(Router)
 
@@ -25,6 +26,14 @@ let router = new Router({
       path: '/projects',
       name: 'projects',
       component: Projects,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/project',
+      name: 'project',
+      component: Project,
       meta: {
         requiresAuth: true
       }

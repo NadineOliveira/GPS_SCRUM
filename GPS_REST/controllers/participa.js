@@ -19,6 +19,21 @@ module.exports.getProjetoByUtente = async function(username){
     return result;
 }
 
+module.exports.removeParticipa = async function(idProjeto,username){
+    var result;
+    await Participa.destroy({
+        where: {
+            idProjeto: idProjeto,
+            username: username
+        }
+    }).then(() => {
+        result = { validation: true }
+    }).catch(() => {
+        result = { validation: false }
+    })
+    return result
+}
+
 module.exports.addParticipa = async function(idProjeto, username){
     var result;
     await Participa.create({
