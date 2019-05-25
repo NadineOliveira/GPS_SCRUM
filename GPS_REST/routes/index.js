@@ -4,6 +4,8 @@ var passport = require("passport")
 var jwt = require('jsonwebtoken')
 var ParticipaController = require('../controllers/participa')
 var ProjetoController = require('../controllers/projetos')
+var SprintsController = require('../controllers/sprints')
+var TarefasController = require('../controllers/tarefas')
 
 // Login User
 router.post('/login', async (req,res,next) => {
@@ -57,6 +59,54 @@ router.get('/projetos/remover/:pid', passport.authenticate('jwt', {session: fals
     var id = req.params.pid
     var resp = await ParticipaController.removeParticipa(id,user);
     res.status(200).send(resp)
+})
+
+router.get("/sprints/:pid", passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.user.username;
+    var id = req.params.pid
+    var val = await ParticipaController.participaUser(id,user);
+    if(val === false)
+        res.status(200).send({validation: false})
+    else {
+        var resp = await SprintsController.getSprintsTarefas(id);
+        res.status(200).send({validation: true, sprints: resp })
+    }
+})
+
+router.get("/grupo/:pid", passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var id = req.params.pid
+    var resp = await ParticipaController.getUsers(id);
+    res.status(200).send(resp)
+})
+
+router.post('/sprint', passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.user.username;
+    var nome = req.body.nome;
+    var data_limite = req.body.data_limite;
+    var idProjeto = req.body.idProjeto;
+
+    var val = await ParticipaController.participaUser(idProjeto,user);
+    if(val === false)
+        res.status(500).send({validation: false})
+    else {
+        var resp = await SprintsController.addSprint(nome,data_limite,idProjeto);
+        res.status(200).send(resp)
+    }
+})
+
+router.post('/tarefa/:pid', passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.user.username;
+    var desc = req.body.descricao;
+    var idSprint = req.body.idSprint;
+    var idProjeto = req.params.pid;
+
+    var val = await ParticipaController.participaUser(idProjeto,user);
+    if(val === false)
+        res.status(500).send({validation: false})
+    else {
+        var resp = await TarefasController.addTarefa(desc,idSprint);
+        res.status(200).send(resp)
+    }
 })
 
 module.exports = router;
