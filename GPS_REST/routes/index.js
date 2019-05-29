@@ -50,7 +50,7 @@ router.post('/projeto', passport.authenticate('jwt', {session: false}), async (r
     var linguagem = req.body.linguagem;
 
     var projeto = await ProjetoController.addProjeto(tema,uc,linguagem);
-    var participa = await ParticipaController.addParticipa(projeto.idProjeto, user)
+    var participa = await ParticipaController.addParticipa(projeto.idProjeto, user, 1)
     res.status(200).send(projeto)
 })
 
@@ -108,5 +108,22 @@ router.post('/tarefa/:pid', passport.authenticate('jwt', {session: false}), asyn
         res.status(200).send(resp)
     }
 })
+
+router.post('/grupo/:pid', passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.body.username;
+    var idProjeto = req.params.pid;
+
+    var val = await ParticipaController.participaUserAll(idProjeto,user);
+    if(val === true)
+        res.status(500).send({validation: false})
+    else {
+        var resp = await ParticipaController.addParticipa(idProjeto, user, 0)
+        if(resp.sql)
+            res.status(500).send({validation: false})
+        else
+            res.status(200).send(resp)
+    }
+})
+
 
 module.exports = router;

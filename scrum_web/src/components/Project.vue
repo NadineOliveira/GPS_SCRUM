@@ -81,7 +81,12 @@
           <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn icon dark fab small color="blue darken-1">
-                    <v-icon>add</v-icon>
+                    <v-tooltip left>
+                        <template v-slot:activator="{ on }">
+                          <v-icon v-on="on" @click="dialogGroup=true">add</v-icon>
+                        </template>
+                        <span>Adicionar novo Membro</span>
+                      </v-tooltip>
                   </v-btn>
           </v-card-actions>
         </v-card>
@@ -126,6 +131,8 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+    </v-layout>
+    <v-layout row justify-center>
       <v-dialog v-model="dialogTarefa" persistent max-width="290">
         <v-card>
           <v-card-title class="headline">Adicionar Sprint</v-card-title>
@@ -142,12 +149,47 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="green darken-1" flat @click="dialogTarefa = false">Fechar</v-btn>
-            <v-btn color="green darken-1" flat @click="novaTarefa(descricao)">Guardar</v-btn>
+            <v-btn color="green darken-1" flat @click="novaTarefa">Guardar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-layout>
+    <v-layout row justify-center>
+      <v-dialog v-model="dialogGroup" persistent max-width="290">
+        <v-card>
+          <v-card-title class="headline">Adicionar Membro</v-card-title>
+          <v-card-text>
+            <v-text-field
+                    prepend-icon="person_add"
+                    v-model="novoUsername"
+                    :rules="[v => !!v || 'Username Obrigatório']"
+                    label="Username"
+                    type="text"
+                    required
+                  ></v-text-field>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" flat @click="dialogGroup = false">Fechar</v-btn>
+            <v-btn color="green darken-1" flat @click="novoMembro">Adicionar</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
     </v-layout>
 
+  <v-snackbar
+      v-model="erro"
+      color="red"
+    >
+      {{ erroMess }}
+      <v-btn
+        dark
+        flat
+        @click="erro = false"
+      >
+        Fechar
+      </v-btn>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -161,7 +203,9 @@ export default {
       validation: true,
       dialogSprint: false,
       dialogTarefa: false,
+      dialogGroup: false,
       descricao: "",
+      novoUsername: "",
       idSprint: -1,
       indexSprint: -1,
       grupo: [],
@@ -197,34 +241,52 @@ export default {
         await axios.post("http://localhost:7001/sprint/",this.novoSprint)
                 .then(res => {
                   this.listaSprints.push(res.data)
+                  this.novoSprint = {nome: "", data_limite: "", idProjeto: -1}
                   this.dialogSprint = false
                 })
                 .catch(() => {
+                  this.novoSprint = {nome: "", data_limite: "", idProjeto: -1}
+                  this.dialogSprint = false
                   this.erro = true
                   this.erroMess = "Erro a adicionar Sprint"
                 })
-
       },
       addTarefa: function(idSprint,index) {
         this.idSprint = idSprint
         this.indexSprint = index
         this.dialogTarefa = true
       },
-      novaTarefa: async function(desc) {
+      novaTarefa: async function() {
         var tar = {
-          descricao: desc,
+          descricao: this.descricao,
           idSprint: this.idSprint
         }
         await axios.post("http://localhost:7001/tarefa/"+this.idProjeto,tar)
           .then(res => {
                   this.listaSprints[this.indexSprint].tarefas.push(res.data)
+                  this.descricao = ""
                   this.dialogTarefa = false
                 })
-                .catch(() => {
+          .catch(() => {
+                  this.descricao = ""
+                  this.dialogTarefa = false
                   this.erro = true
                   this.erroMess = "Erro a adicionar Tarefa"
                 })
-      }
+      },
+      novoMembro: async function() {
+      await axios.post("http://localhost:7001/grupo/"+this.idProjeto,{username: this.novoUsername})
+            .then(res => {
+              this.novoUsername = ""
+              this.dialogGroup = false
+            })
+            .catch(() => {
+              this.novoUsername = ""
+              this.dialogGroup = false
+              this.erro = true
+              this.erroMess = "Erro na adição de Membro"
+            })
+    }
     }
 }
 </script>
