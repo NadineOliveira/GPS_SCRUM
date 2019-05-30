@@ -19,6 +19,15 @@ module.exports = function(sequelize, DataTypes) {
     Linguagem: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    criador: {
+      type: DataTypes.STRING(45),
+      allowNull: false,
+      primaryKey: true,
+      references: {
+        model: 'utilizador',
+        key: 'username'
+      }
     }
   }, {
     tableName: 'projeto'

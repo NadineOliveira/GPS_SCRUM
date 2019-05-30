@@ -49,7 +49,7 @@ router.post('/projeto', passport.authenticate('jwt', {session: false}), async (r
     var uc = req.body.uc;
     var linguagem = req.body.linguagem;
 
-    var projeto = await ProjetoController.addProjeto(tema,uc,linguagem);
+    var projeto = await ProjetoController.addProjeto(tema,uc,linguagem,user);
     var participa = await ParticipaController.addParticipa(projeto.idProjeto, user)
     res.status(200).send(projeto)
 })

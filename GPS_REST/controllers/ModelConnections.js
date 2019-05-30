@@ -20,6 +20,8 @@ Sprint.belongsTo(Projeto, {foreignKey: 'idProjeto'});
 Sprint.hasMany(Tarefa, {foreignKey: 'idSprint'});
 Tarefa.belongsTo(Sprint, {foreignKey: 'idSprint'});
 
+Projeto.belongsTo(Utilizador, {foreignKey: 'criador'});
+Utilizador.hasMany(Projeto, {foreignKey: 'criador'});
 
 exports.sprint = Sprint;
 exports.tarefa = Tarefa;
