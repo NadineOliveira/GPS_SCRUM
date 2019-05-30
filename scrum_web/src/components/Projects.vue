@@ -30,7 +30,7 @@
         </v-flex>
 
         <v-flex xs1 class="text-xs-right">
-            <v-btn fab dark small color="blue darken-1" @click="adicionaItem">
+            <v-btn fab dark small color="blue darken-1" @click="adicionaProjeto">
               <v-icon dark>add</v-icon>
             </v-btn>
 
@@ -67,7 +67,7 @@
                   <v-btn fab dark small color="green darken-4" @click="rowClicked(props.item)">
                     <v-icon dark>edit</v-icon>
                   </v-btn>
-                  <v-btn fab dark small color="red darken-4" @click="removerItem(props.item)">
+                  <v-btn fab dark small color="red darken-4" @click="removerProjeto(props.item)">
                     <v-icon dark>delete</v-icon>
                   </v-btn>
                 </td>
@@ -116,7 +116,7 @@ export default {
     this.loadTable()
   },
   methods: {
-    adicionaItem: function () {
+    adicionaProjeto: function () {
       axios.post('http://localhost:7001/projeto', this.novo)
         .then(res => {
           this.lista.push(JSON.parse(JSON.stringify({
@@ -149,7 +149,7 @@ export default {
         this.lista.push(JSON.parse(JSON.stringify(proj)))
       }
     },
-    removerItem: async function (item) {
+    removerProjeto: async function (item) {
       var index = this.lista.findIndex(elem => elem.id === item.id)
       if (index !== -1) {
         var response = await axios.get('http://localhost:7001/projetos/remover/' + this.lista[index].id)

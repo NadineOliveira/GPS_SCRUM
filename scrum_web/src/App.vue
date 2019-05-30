@@ -8,7 +8,7 @@
       clipped-right
     >
       <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-      <v-toolbar-title>Academic Scrum</v-toolbar-title>
+      <v-toolbar-title @click="home">Academic Scrum</v-toolbar-title>
       <v-spacer></v-spacer>
     </v-toolbar>
     <v-navigation-drawer

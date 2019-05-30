@@ -19,6 +19,10 @@ module.exports = function(sequelize, DataTypes) {
         model: 'utilizador',
         key: 'username'
       }
+    },
+    acepted: {
+      type: DataTypes.INTEGER(1),
+      allowNull: false
     }
   }, {
     tableName: 'participa'

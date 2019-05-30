@@ -109,4 +109,21 @@ router.post('/tarefa/:pid', passport.authenticate('jwt', {session: false}), asyn
     }
 })
 
+router.post('/grupo/:pid', passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.body.username;
+    var idProjeto = req.params.pid;
+
+    var val = await ParticipaController.participaUserAll(idProjeto,user);
+    if(val === true)
+        res.status(500).send({validation: false})
+    else {
+        var resp = await ParticipaController.addParticipa(idProjeto, user, 0)
+        if(resp.sql)
+            res.status(500).send({validation: false})
+        else
+            res.status(200).send(resp)
+    }
+})
+
+
 module.exports = router;
