@@ -196,98 +196,95 @@
 <script>
 var axios = require('axios')
 export default {
-    props: ["idProjeto"],
-    data: () => ({
-      erro: false,
-      erroMess: "",
-      validation: true,
-      dialogSprint: false,
-      dialogTarefa: false,
-      dialogGroup: false,
-      descricao: "",
-      novoUsername: "",
-      idSprint: -1,
-      indexSprint: -1,
-      grupo: [],
-      listaSprints: [],
-      novoSprint: {
-        nome: "",
-        data_limite: "",
-        idProjeto: -1
-      }
-    }),
-    mounted: async function () {
-      this.loadSprints(this.idProjeto)
-      this.loadGroup(this.idProjeto)
+  props: ['idProjeto'],
+  data: () => ({
+    erro: false,
+    erroMess: '',
+    validation: true,
+    dialogSprint: false,
+    dialogTarefa: false,
+    dialogGroup: false,
+    descricao: '',
+    novoUsername: '',
+    idSprint: -1,
+    indexSprint: -1,
+    grupo: [],
+    listaSprints: [],
+    novoSprint: {
+      nome: '',
+      data_limite: '',
+      idProjeto: -1
+    }
+  }),
+  mounted: async function () {
+    this.loadSprints(this.idProjeto)
+    this.loadGroup(this.idProjeto)
+  },
+  methods: {
+    loadGroup: async function (id) {
+      var res = await axios.get('http://localhost:7001/grupo/' + id)
+      this.grupo = JSON.parse(JSON.stringify(res.data))
     },
-    methods: {
-      loadGroup: async function(id){
-        var res = await axios.get("http://localhost:7001/grupo/"+id)
-        this.grupo = JSON.parse(JSON.stringify(res.data))
-      },
-      loadSprints: async function(id){
-        var res = await axios.get("http://localhost:7001/sprints/"+id)
-        if(res.data.validation === false)
-          this.validation = false
-        else{
-          this.listaSprints = JSON.parse(JSON.stringify(res.data.sprints))
-        }
-      },
-      goProjetos: function() {
-        this.$router.push('/projects')
-      },
-      adicionarSprint: async function() {
-        this.novoSprint.idProjeto = this.idProjeto
-        await axios.post("http://localhost:7001/sprint/",this.novoSprint)
-                .then(res => {
-                  this.listaSprints.push(res.data)
-                  this.novoSprint = {nome: "", data_limite: "", idProjeto: -1}
-                  this.dialogSprint = false
-                })
-                .catch(() => {
-                  this.novoSprint = {nome: "", data_limite: "", idProjeto: -1}
-                  this.dialogSprint = false
-                  this.erro = true
-                  this.erroMess = "Erro a adicionar Sprint"
-                })
-      },
-      addTarefa: function(idSprint,index) {
-        this.idSprint = idSprint
-        this.indexSprint = index
-        this.dialogTarefa = true
-      },
-      novaTarefa: async function() {
-        var tar = {
-          descricao: this.descricao,
-          idSprint: this.idSprint
-        }
-        await axios.post("http://localhost:7001/tarefa/"+this.idProjeto,tar)
-          .then(res => {
-                  this.listaSprints[this.indexSprint].tarefas.push(res.data)
-                  this.descricao = ""
-                  this.dialogTarefa = false
-                })
-          .catch(() => {
-                  this.descricao = ""
-                  this.dialogTarefa = false
-                  this.erro = true
-                  this.erroMess = "Erro a adicionar Tarefa"
-                })
-      },
-      novoMembro: async function() {
-      await axios.post("http://localhost:7001/grupo/"+this.idProjeto,{username: this.novoUsername})
-            .then(res => {
-              this.novoUsername = ""
-              this.dialogGroup = false
-            })
-            .catch(() => {
-              this.novoUsername = ""
-              this.dialogGroup = false
-              this.erro = true
-              this.erroMess = "Erro na adição de Membro"
-            })
+    loadSprints: async function (id) {
+      var res = await axios.get('http://localhost:7001/sprints/' + id)
+      if (res.data.validation === false) { this.validation = false } else {
+        this.listaSprints = JSON.parse(JSON.stringify(res.data.sprints))
+      }
+    },
+    goProjetos: function () {
+      this.$router.push('/projects')
+    },
+    adicionarSprint: async function () {
+      this.novoSprint.idProjeto = this.idProjeto
+      await axios.post('http://localhost:7001/sprint/', this.novoSprint)
+        .then(res => {
+          this.listaSprints.push(res.data)
+          this.novoSprint = { nome: '', data_limite: '', idProjeto: -1 }
+          this.dialogSprint = false
+        })
+        .catch(() => {
+          this.novoSprint = { nome: '', data_limite: '', idProjeto: -1 }
+          this.dialogSprint = false
+          this.erro = true
+          this.erroMess = 'Erro a adicionar Sprint'
+        })
+    },
+    addTarefa: function (idSprint, index) {
+      this.idSprint = idSprint
+      this.indexSprint = index
+      this.dialogTarefa = true
+    },
+    novaTarefa: async function () {
+      var tar = {
+        descricao: this.descricao,
+        idSprint: this.idSprint
+      }
+      await axios.post('http://localhost:7001/tarefa/' + this.idProjeto, tar)
+        .then(res => {
+          this.listaSprints[this.indexSprint].tarefas.push(res.data)
+          this.descricao = ''
+          this.dialogTarefa = false
+        })
+        .catch(() => {
+          this.descricao = ''
+          this.dialogTarefa = false
+          this.erro = true
+          this.erroMess = 'Erro a adicionar Tarefa'
+        })
+    },
+    novoMembro: async function () {
+      await axios.post('http://localhost:7001/grupo/' + this.idProjeto, { username: this.novoUsername })
+        .then(res => {
+          this.novoUsername = ''
+          this.dialogGroup = false
+        })
+        .catch(() => {
+          this.novoUsername = ''
+          this.dialogGroup = false
+          this.erro = true
+          this.erroMess = 'Erro na adição de Membro'
+        })
     }
-    }
+  }
 }
 </script>
-

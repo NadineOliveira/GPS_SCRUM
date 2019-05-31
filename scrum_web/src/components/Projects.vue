@@ -1,6 +1,7 @@
 <template>
   <v-container>
     <v-layout>
+      <v-flex xs9>
         <v-flex xs5 mr-1>
           <v-text-field
             label="Tema"
@@ -35,6 +36,29 @@
             </v-btn>
 
         </v-flex>
+      </v-flex>
+      <v-flex xs3 ma-1>
+        <v-card>
+          <v-card-title primary-title>
+            <h3>Pedidos</h3>
+          </v-card-title>
+          <v-card-text>
+            <v-list two-line>
+              <template v-for="item in pedidos">
+                <v-list-tile
+                  :key="item.id"
+                  avatar
+                >
+                  <v-list-tile-content>
+                    <v-list-tile-title v-html="item.tema"></v-list-tile-title>
+                    <v-list-tile-sub-title v-html="item.criador"></v-list-tile-sub-title>
+                  </v-list-tile-content>
+                </v-list-tile>
+              </template>
+            </v-list>
+          </v-card-text>
+        </v-card>
+      </v-flex>
     </v-layout>
      <v-divider></v-divider>
     <v-layout row wrap >
@@ -99,6 +123,7 @@ export default {
     erro: false,
     search: '',
     lista: [],
+    pedidos: [],
     novo: {
       id: -1,
       tema: '',
@@ -114,6 +139,7 @@ export default {
   }),
   mounted: async function () {
     this.loadTable()
+    this.loadPedidos()
   },
   methods: {
     adicionaProjeto: function () {
@@ -133,7 +159,6 @@ export default {
     loadTable: async function () {
       this.lista = []
       var response = await axios.get('http://localhost:7001/projetos')
-      console.log(response.data)
       var res = response.data
       var proj = {
         id: -1,
@@ -147,6 +172,20 @@ export default {
         proj.uc = res[i].projeto.UC
         proj.linguagem = res[i].projeto.Linguagem
         this.lista.push(JSON.parse(JSON.stringify(proj)))
+      }
+    },
+    loadPedidos: async function () {
+      this.pedidos = []
+      var response = await axios.get('http://localhost:7001/projetos/pendentes')
+      var res = response.data
+      var proj = {}
+      for (var i in res) {
+        proj.id = res[i].idProjeto
+        proj.tema = res[i].projeto.Tema
+        proj.uc = res[i].projeto.UC
+        proj.linguagem = res[i].projeto.Linguagem
+        proj.criador = res[i].projeto.criador
+        this.pedidos.push(JSON.parse(JSON.stringify(proj)))
       }
     },
     removerProjeto: async function (item) {

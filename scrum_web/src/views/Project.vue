@@ -3,11 +3,11 @@
 </template>
 
 <script>
-import Projeto from "@/components/Project.vue"
+import Projeto from '@/components/Project.vue'
 
 export default {
-    components: {
-        Projeto
-    }
+  components: {
+    Projeto
+  }
 }
 </script>

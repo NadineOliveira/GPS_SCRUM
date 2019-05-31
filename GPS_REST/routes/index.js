@@ -50,8 +50,14 @@ router.post('/projeto', passport.authenticate('jwt', {session: false}), async (r
     var linguagem = req.body.linguagem;
 
     var projeto = await ProjetoController.addProjeto(tema,uc,linguagem,user);
-    var participa = await ParticipaController.addParticipa(projeto.idProjeto, user)
+    var participa = await ParticipaController.addParticipa(projeto.idProjeto, user, 1)
     res.status(200).send(projeto)
+})
+
+router.get('/projetos/pendentes', passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.user.username;
+    var projetos = await ParticipaController.getProjetoByUtentePendente(user);
+    res.status(200).send(projetos)
 })
 
 router.get('/projetos/remover/:pid', passport.authenticate('jwt', {session: false}), async (req,res, next) => {
@@ -112,17 +118,21 @@ router.post('/tarefa/:pid', passport.authenticate('jwt', {session: false}), asyn
 router.post('/grupo/:pid', passport.authenticate('jwt', {session: false}), async (req,res, next) => {
     var user = req.body.username;
     var idProjeto = req.params.pid;
-
-    var val = await ParticipaController.participaUserAll(idProjeto,user);
-    if(val === true)
-        res.status(500).send({validation: false})
-    else {
-        var resp = await ParticipaController.addParticipa(idProjeto, user, 0)
-        if(resp.sql)
+    
+    var owner = await ProjetoController.getProjeto(idProjeto);
+    if(owner.criador == user) {
+        var val = await ParticipaController.participaUserAll(idProjeto,user);
+        if(val === true)
             res.status(500).send({validation: false})
-        else
-            res.status(200).send(resp)
+        else {
+            var resp = await ParticipaController.addParticipa(idProjeto, user, 0)
+            if(resp.sql)
+                res.status(500).send({validation: false})
+            else
+                res.status(200).send(resp)
+        }
     }
+    else res.status(500).send({validation: false})
 })
 
 

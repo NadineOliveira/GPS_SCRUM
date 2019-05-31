@@ -72,6 +72,23 @@ module.exports.getProjetoByUtente = async function(username){
     return result;
 }
 
+module.exports.getProjetoByUtentePendente = async function(username){
+    var result = [];
+    await Participa.findAll(
+        {where: {username: username, acepted: 0}, 
+        include: [{
+            model: Projeto,
+            attributes: ['Tema','UC','Linguagem','criador']}]}
+    ).then(values => {
+        for(i in values)
+          result.push(values[i].dataValues);
+    }).catch(err => {
+        result = err;
+    });
+    return result;
+}
+
+
 module.exports.removeParticipa = async function(idProjeto,username){
     var result;
     await Participa.destroy({
