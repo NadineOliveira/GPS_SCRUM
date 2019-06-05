@@ -2,10 +2,6 @@
 
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('realiza', {
-    data: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
     idTarefa: {
       type: DataTypes.INTEGER(11),
       allowNull: false,

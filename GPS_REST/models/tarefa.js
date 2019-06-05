@@ -19,6 +19,10 @@ module.exports = function(sequelize, DataTypes) {
         model: 'sprint',
         key: 'idSprint'
       }
+    },
+    data: {
+      type: DataTypes.STRING(255),
+      allowNull: false
     }
   }, {
     tableName: 'tarefa'

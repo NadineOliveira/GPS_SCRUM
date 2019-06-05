@@ -6,7 +6,8 @@ module.exports.addTarefa = async function(desc,idSprint){
     var result;
     await Tarefa.create({
         descricao: desc,
-        idSprint: idSprint
+        idSprint: idSprint,
+        data: "NAO"
     }).then(s => {
                 result = s;
     }).catch(err => {

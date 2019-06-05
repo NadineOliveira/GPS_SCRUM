@@ -37,7 +37,12 @@
                 >
                   <v-list-tile-content>
                     <v-list-tile-title>{{ subItem.descricao }}</v-list-tile-title>
+                    <v-list-tile-sub-title v-if='subItem.data !== "NAO"'>{{ "Concluido a "+ subItem.data }}</v-list-tile-sub-title>
+                    <v-list-tile-sub-title v-else>
+                        {{getUsers(subItem.idTarefa)}}
+                    </v-list-tile-sub-title>
                   </v-list-tile-content>
+
                 </v-list-tile>
 
               </v-list-group>
@@ -253,6 +258,17 @@ export default {
       this.idSprint = idSprint
       this.indexSprint = index
       this.dialogTarefa = true
+    },
+    getUsers: async function (id) {
+      await axios.get('http://localhost:7001/'+this.idProjeto+'/users/'+id)
+      .then(res => {
+        string = ""
+        for( i in res.data)
+          string += res.data[i].username + " | "
+        
+        return string
+      })
+      .catch(() => {return "Erro"}) 
     },
     novaTarefa: async function () {
       var tar = {

@@ -1,7 +1,6 @@
 <template>
   <v-container>
     <v-layout>
-      <v-flex xs9>
         <v-flex xs5 mr-1>
           <v-text-field
             label="Tema"
@@ -31,38 +30,14 @@
         </v-flex>
 
         <v-flex xs1 class="text-xs-right">
-            <v-btn fab dark small color="blue darken-1" @click="adicionaProjeto">
+            <v-btn right fab dark small color="blue darken-1" @click="adicionaProjeto">
               <v-icon dark>add</v-icon>
             </v-btn>
 
         </v-flex>
-      </v-flex>
-      <v-flex xs3 ma-1>
-        <v-card>
-          <v-card-title primary-title>
-            <h3>Pedidos</h3>
-          </v-card-title>
-          <v-card-text>
-            <v-list two-line>
-              <template v-for="item in pedidos">
-                <v-list-tile
-                  :key="item.id"
-                  avatar
-                >
-                  <v-list-tile-content>
-                    <v-list-tile-title v-html="item.tema"></v-list-tile-title>
-                    <v-list-tile-sub-title v-html="item.criador"></v-list-tile-sub-title>
-                  </v-list-tile-content>
-                </v-list-tile>
-              </template>
-            </v-list>
-          </v-card-text>
-        </v-card>
-      </v-flex>
     </v-layout>
-     <v-divider></v-divider>
-    <v-layout row wrap >
-      <v-flex xs12>
+    <v-layout>
+      <v-flex xs9 mr-1>
         <v-toolbar flat color="white">
           <v-toolbar-title>
             Projetos
@@ -89,7 +64,7 @@
                 <td >{{ props.item.linguagem }}</td>
                 <td class="text-xs-right" >
                   <v-btn fab dark small color="green darken-4" @click="rowClicked(props.item)">
-                    <v-icon dark>edit</v-icon>
+                    <v-icon dark>play_arrow</v-icon>
                   </v-btn>
                   <v-btn fab dark small color="red darken-4" @click="removerProjeto(props.item)">
                     <v-icon dark>delete</v-icon>
@@ -104,13 +79,58 @@
             </template>
         </v-data-table>
       </v-flex>
+      <v-flex xs3 ma-1>
+        <v-card>
+          <v-card-title primary-title>
+            <h3>Pedidos</h3>
+          </v-card-title>
+          <v-card-text>
+            <v-list two-line>
+              <template v-for="item in pedidos">
+                <v-list-tile
+                  :key="item.id"
+                  avatar
+                >
+                  <v-list-tile-content>
+                    <v-list-tile-title v-html="item.tema"></v-list-tile-title>
+                    <v-list-tile-sub-title v-html="'Projeto de '+item.criador"></v-list-tile-sub-title>
+                  </v-list-tile-content>
+                  <v-list-tile-action>
+                       <v-tooltip left>
+                        <template v-slot:activator="{ on }">
+                          <v-icon v-on="on" @click="aceitar(item.id)">add</v-icon>
+                        </template>
+                        <span>Aceitar Pedido</span>
+                      </v-tooltip>
+                      <v-tooltip left>
+                        <template v-slot:activator="{ on }">
+                          <v-icon v-on="on" @click="recusar(item.id)">delete</v-icon>
+                        </template>
+                        <span>Remover Pedido</span>
+                      </v-tooltip>
+                    </v-list-tile-action>
+                </v-list-tile>
+              </template>
+            </v-list>
+          </v-card-text>
+        </v-card>
+      </v-flex>
     </v-layout>
 
     <v-layout>
-      <v-snackbar v-model="erro" color="red darken-4">
-        Erro a remover tema...
-        <v-btn dark flat @click="erro = false">Fechar</v-btn>
-      </v-snackbar>
+      <v-snackbar
+        v-model="erro"
+        color="red"
+      >
+        {{ erroMess }}
+      <v-btn
+        dark
+        flat
+        @click="erro = false"
+      >
+        Fechar
+      </v-btn>
+    </v-snackbar>
     </v-layout>
 
   </v-container>
@@ -121,6 +141,7 @@ var axios = require('axios')
 export default {
   data: () => ({
     erro: false,
+    errMess: "",
     search: '',
     lista: [],
     pedidos: [],
@@ -154,7 +175,27 @@ export default {
         })
         .catch(() => {
           this.erro = true
+          this.errMess = "Erro na adição de Projeto"
         })
+    },
+    aceitar: async function(id) {
+      var response = await axios.get('http://localhost:7001/aceitar/'+id)
+      if (response.data.validation === true) { 
+        this.loadPedidos()
+        this.loadTable()
+      } else { 
+        this.erro = false 
+        this.errMess = "Erro a aceitar Pedido"
+      }
+    },
+    recusar: async function(id) {
+      var response = await axios.get('http://localhost:7001/recusar/'+id)
+      if (response.data.validation === true) { 
+        this.loadPedidos()
+      } else { 
+        this.erro = false 
+        this.errMess = "Erro a recusar Pedido"
+      }
     },
     loadTable: async function () {
       this.lista = []
@@ -192,8 +233,16 @@ export default {
       var index = this.lista.findIndex(elem => elem.id === item.id)
       if (index !== -1) {
         var response = await axios.get('http://localhost:7001/projetos/remover/' + this.lista[index].id)
-        if (response.data.validation === true) { this.lista.splice(index, 1) } else { this.erro = false }
-      } else { this.erro = true }
+        if (response.data.validation === true) { this.lista.splice(index, 1) } 
+        else { 
+          this.erro = false
+          this.errMess = "Erro a remover Projeto"
+        }
+      } 
+      else { 
+          this.erro = false
+          this.errMess = "Erro a remover Projeto"
+      }
     },
     rowClicked: function (item) {
       this.$router.push('/project/' + item.id)

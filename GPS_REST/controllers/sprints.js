@@ -1,5 +1,6 @@
 var Sprint = require('./ModelConnections').sprint;
 var Tarefa = require('./ModelConnections').tarefa;
+var Realiza = require('./ModelConnections').realiza;
 var db = require('./ModelConnections').db;
 
 module.exports.getSprintsTarefas = async function(idProjeto){
@@ -8,7 +9,8 @@ module.exports.getSprintsTarefas = async function(idProjeto){
         where: {idProjeto: idProjeto}, 
         include: [{
             model: Tarefa,
-            attributes: ['idTarefa','descricao']}]
+            attributes: ['idTarefa','descricao','data']
+        }]
     }).then(values => {
         for(i in values)
           result.push(values[i].dataValues);

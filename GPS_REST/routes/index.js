@@ -6,6 +6,7 @@ var ParticipaController = require('../controllers/participa')
 var ProjetoController = require('../controllers/projetos')
 var SprintsController = require('../controllers/sprints')
 var TarefasController = require('../controllers/tarefas')
+var RealizaController = require('../controllers/realiza')
 
 // Login User
 router.post('/login', async (req,res,next) => {
@@ -18,7 +19,7 @@ router.post('/login', async (req,res,next) => {
           req.login(user, {session: false}, async (error) => {
               if(error) return next(error)
               const myuser = {username: user.username, password: user.password}
-              const token = jwt.sign({user: myuser}, 'GPS_2019')
+              const token = jwt.sign({user: myuser}, 'GPS_2019', { expiresIn: '1h' })
               req.user.token = token
               req.session.token = token
 
@@ -30,6 +31,12 @@ router.post('/login', async (req,res,next) => {
       }
   }) (req,res,next)
 })
+
+router.post('/register', passport.authenticate('registo', {
+    session: false,
+    successRedirect: '/',
+    failureRedirect: '/'
+}))
 
 router.get('/logout', passport.authenticate('jwt', {session: false}), (req,res,next) => {
   req.session.destroy(err => {
@@ -135,5 +142,33 @@ router.post('/grupo/:pid', passport.authenticate('jwt', {session: false}), async
     else res.status(500).send({validation: false})
 })
 
+
+router.get("/aceitar/:pid", passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.user.username;
+    var id = req.params.pid
+    var val = await ParticipaController.aceitar(id,user);
+    res.status(200).send(val)
+})
+
+router.get("/recusar/:pid", passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.user.username;
+    var id = req.params.pid
+    var val = await ParticipaController.removeParticipa(id,user);
+    res.status(200).send(val)
+})
+
+router.get("/:pid/users/:tid", passport.authenticate('jwt', {session: false}), async (req,res, next) => {
+    var user = req.user.username;
+    var id = req.params.pid
+    var tid = req.params.tid
+
+    var val = await ParticipaController.participaUser(id,user)
+    if(val === false)
+        res.status(200).send({validation: false})
+    else {
+        var resp = await RealizaController.getUsersTarefas(tid);
+        res.status(200).send(resp)
+    }
+})
 
 module.exports = router;

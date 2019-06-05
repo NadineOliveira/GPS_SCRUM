@@ -59,7 +59,7 @@ module.exports.getUsers = async function(id){
 module.exports.getProjetoByUtente = async function(username){
     var result = [];
     await Participa.findAll(
-        {where: {username: username}, 
+        {where: {username: username, acepted: 1}, 
         include: [{
             model: Projeto,
             attributes: ['Tema','UC','Linguagem']}]}
@@ -88,6 +88,18 @@ module.exports.getProjetoByUtentePendente = async function(username){
     return result;
 }
 
+module.exports.aceitar = async function(idProjeto,username) {
+    var result;
+    await Participa.update(
+        {acepted: 1},
+        {where: {idProjeto: idProjeto, username: username}}
+    ).then(() => {
+        result = { validation: true }
+    }).catch(() => {
+        result = { validation: false }
+    })
+    return result
+}
 
 module.exports.removeParticipa = async function(idProjeto,username){
     var result;
