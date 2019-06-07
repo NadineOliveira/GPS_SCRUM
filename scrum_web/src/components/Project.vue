@@ -42,6 +42,14 @@
                         {{getUsers(subItem.idTarefa)}}
                     </v-list-tile-sub-title>
                   </v-list-tile-content>
+                  <v-list-tile-action>
+                       <v-tooltip left>
+                        <template v-slot:activator="{ on }">
+                          <v-icon v-on="on" @click="dialogUserTarefa=true; idTarefa = subItem.idTarefa">add</v-icon>
+                        </template>
+                        <span>Adicionar novo Utilizador à tarefa</span>
+                      </v-tooltip>
+                    </v-list-tile-action>
 
                 </v-list-tile>
 
@@ -140,7 +148,7 @@
     <v-layout row justify-center>
       <v-dialog v-model="dialogTarefa" persistent max-width="290">
         <v-card>
-          <v-card-title class="headline">Adicionar Sprint</v-card-title>
+          <v-card-title class="headline">Adicionar Tarefa</v-card-title>
           <v-card-text>
             <v-text-field
                     prepend-icon="assignment"
@@ -182,6 +190,147 @@
       </v-dialog>
     </v-layout>
 
+    <v-layout row justify-center>
+      <v-dialog v-model="dialogMilestone" persistent max-width="290">
+        <v-card>
+          <v-card-title class="headline">Adicionar Milestone</v-card-title>
+          <v-card-text>
+            <v-text-field
+                    prepend-icon="assignment"
+                    v-model="novoMilestone.nome"
+                    :rules="[v => !!v || 'Nome Obrigatório']"
+                    label="Nome"
+                    type="text"
+                    required
+                  ></v-text-field>
+            <v-text-field
+                    prepend-icon="calendar_today"
+                    v-model="novoMilestone.data_limite"
+                    :rules="[v => !!v || 'Data Obrigatório']"
+                    label="Data Limite"
+                    type="date"
+                    required
+                  ></v-text-field>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" flat @click="dialogMilestone = false">Fechar</v-btn>
+            <v-btn color="green darken-1" flat @click="adicionarMilestone">Guardar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-layout>
+
+    <v-layout row justify-center>
+      <v-dialog v-model="dialogUserTarefa" persistent max-width="290">
+        <v-card>
+          <v-card-title class="headline">Adicionar membro a Tarefa</v-card-title>
+          <v-select :items="grupo2" label="Selecione um utilizador" item-value="key" item-text="value" prepend-icon="person_add" v-model="novoUserTarefa" required/>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" flat @click="dialogUserTarefa = false">Fechar</v-btn>
+            <v-btn color="green darken-1" flat @click="addUserTarefa">Adicionar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-layout>
+
+
+    <v-flex xs12 ma-1>
+        <v-card>
+          <v-card-title primary-title>
+            <h3>Milestones</h3>
+          </v-card-title>
+
+          <v-card-text>
+            <v-list>
+              <v-list-group
+                v-for="(item) in listaMilestones"
+                :key="item.idMilestone"
+                no-action
+              >
+                <template v-slot:activator>
+                  <v-list-tile>
+                    <v-list-tile-content>
+                      <v-list-tile-title>{{ item.nome }}</v-list-tile-title>
+                      <v-list-tile-sub-title>{{ 'Data Limite: '+item.data_limite }}</v-list-tile-sub-title>
+                    </v-list-tile-content>
+                  </v-list-tile>
+                </template>
+
+              </v-list-group>
+            </v-list>
+          </v-card-text>
+
+          <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn icon dark fab small color="blue darken-1">
+                    <v-tooltip left>
+                        <template v-slot:activator="{ on }">
+                          <v-icon v-on="on" @click="dialogMilestone=true">add</v-icon>
+                        </template>
+                        <span>Adicionar novo Milestone</span>
+                      </v-tooltip>
+                  </v-btn>
+          </v-card-actions>
+
+          <v-calendar
+            :now="today"
+            ref="calendar"
+            :value="today"
+            v-model="start"
+            :type="type"
+            :end="end"
+            color="primary"
+          >
+            <template v-slot:day="{ date }">
+              <template v-for="event in eventsMap[date]">
+                <v-menu
+                  :key="event.nome"
+                  v-model="event.open"
+                  full-width
+                  offset-x
+                >
+                  <template v-slot:activator="{ on }">
+                    <div
+                      v-ripple
+                      class="my-event"
+                      v-on="on"
+                      v-html="event.nome"
+                    ></div>
+                  </template>
+                </v-menu>
+              </template>
+            </template>
+            
+          </v-calendar>
+                <v-flex
+        sm4
+        xs12
+        class="text-sm-left text-xs-center"
+      >
+        <v-btn @click="$refs.calendar.prev()">
+          <v-icon
+            dark
+            left
+          >
+            keyboard_arrow_left
+          </v-icon>
+          Prev
+        </v-btn>
+        <v-btn @click="$refs.calendar.next()">
+          Next
+          <v-icon
+            right
+            dark
+          >
+            keyboard_arrow_right
+          </v-icon>
+        </v-btn>
+      </v-flex>
+        </v-card>
+      </v-flex>
+
   <v-snackbar
       v-model="erro"
       color="red"
@@ -199,6 +348,7 @@
 </template>
 
 <script>
+
 var axios = require('axios')
 export default {
   props: ['idProjeto'],
@@ -209,32 +359,76 @@ export default {
     dialogSprint: false,
     dialogTarefa: false,
     dialogGroup: false,
+    dialogMilestone: false,
+    dialogUserTarefa: false,
     descricao: '',
     novoUsername: '',
+    novoUserTarefa: '',
     idSprint: -1,
+    idTarefa: -1,
     indexSprint: -1,
     grupo: [],
+    grupo2: [],
     listaSprints: [],
+    listaUtilizadores:[],
+    listaMilestones: [],
+    type: 'month',
+    start: '2019-06-01',
+    end: '2023-01-06',
     novoSprint: {
       nome: '',
       data_limite: '',
       idProjeto: -1
-    }
+    },
+    novaTarefa: {
+      idTarefa: '',
+      username: ' '
+    },
+    novoMilestone: {
+      nome: '',
+      data_limite: '',
+      idProjeto: -1
+    },
+    attributes: [
+      {
+        highlight: true,
+        dates: []
+      }
+    ],
+    events: {}
   }),
+  computed: {
+    // convert the list of events into a map of lists keyed by date
+    eventsMap () {
+      const map = {}
+      this.listaMilestones.forEach(e => (map[e.data_limite] = map[e.data_limite] || []).push(e))
+      return map
+    }
+  },
   mounted: async function () {
     this.loadSprints(this.idProjeto)
     this.loadGroup(this.idProjeto)
+    this.loadMilestones(this.idProjeto)
   },
   methods: {
     loadGroup: async function (id) {
       var res = await axios.get('http://localhost:7001/grupo/' + id)
       this.grupo = JSON.parse(JSON.stringify(res.data))
+      this.grupo2 = res.data.map(user => {
+        return {
+          value: user.nome,
+          key: user.username
+        };
+      });
     },
     loadSprints: async function (id) {
       var res = await axios.get('http://localhost:7001/sprints/' + id)
-      if (res.data.validation === false) { this.validation = false } else {
         this.listaSprints = JSON.parse(JSON.stringify(res.data.sprints))
-      }
+    },
+    loadMilestones: async function (id) {
+      var res = await axios.get('http://localhost:7001/milestones/' + id)
+      this.listaMilestones = JSON.parse(JSON.stringify(res.data))
+
     },
     goProjetos: function () {
       this.$router.push('/projects')
@@ -254,14 +448,40 @@ export default {
           this.erroMess = 'Erro a adicionar Sprint'
         })
     },
+    adicionarMilestone: async function () {
+      this.novoMilestone.idProjeto = this.idProjeto
+      await axios.post('http://localhost:7001/milestone/', this.novoMilestone)
+        .then(res => {
+          this.listaMilestones.push(res.data)
+          this.novoMilestone = { nome: '', data_limite: '', idProjeto: -1 }
+          this.dialogMilestone = false
+        })
+        .catch(() => {
+          this.novoMilestone = { nome: '', data_limite: '', idProjeto: -1 }
+          this.dialogMilestone = false
+          this.erro = true
+          this.erroMess = 'Erro a adicionar Milestone'
+        })
+    },
     addTarefa: function (idSprint, index) {
       this.idSprint = idSprint
       this.indexSprint = index
       this.dialogTarefa = true
     },
+    addUserTarefa: async function () {
+      await axios.post('http://localhost:7001/userT/', {username: this.novoUserTarefa, idTarefa: this.idTarefa})
+        .then(res => {
+          this.listaUtilizadores.push(res.data)
+          this.dialogUserTarefa = false
+        })
+        .catch(() => {
+          this.dialogUserTarefa = false
+          this.erro = true
+          this.erroMess = 'Erro a adicionar Utilizador a Tarefa'
+        })
+    },
     getUsers: async function (id) {
-      await axios.get('http://localhost:7001/'+this.idProjeto+'/users/'+id)
-      .then(res => {
+       await axios.get('http://localhost:7001/'+this.idProjeto+'/users/'+id).then(res => {
         string = ""
         for( i in res.data)
           string += res.data[i].username + " | "
@@ -300,7 +520,27 @@ export default {
           this.erro = true
           this.erroMess = 'Erro na adição de Membro'
         })
-    }
+    },
+    open (event) {
+      alert(event.title)
+    },
   }
 }
 </script>
+
+<style lang="stylus" scoped>
+  .my-event {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: 2px;
+    background-color: #1867c0;
+    color: #ffffff;
+    border: 1px solid #1867c0;
+    width: 100%;
+    font-size: 12px;
+    padding: 3px;
+    cursor: pointer;
+    margin-bottom: 1px;
+  }
+</style>
