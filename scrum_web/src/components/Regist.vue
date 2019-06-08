@@ -4,7 +4,7 @@
           <v-flex xs12 sm10 md8 ma-2>
             <v-card class="elevation-12">
               <v-toolbar dark color="blue darken-1">
-                <v-toolbar-title>Login</v-toolbar-title>
+                <v-toolbar-title>Register</v-toolbar-title>
                 <v-spacer></v-spacer>
               </v-toolbar>
               <v-card-text>
@@ -14,6 +14,14 @@
                     v-model="username"
                     :rules="[v => !!v || 'Utilizador Obrigatório']"
                     label="Utilizador"
+                    type="text"
+                    required
+                  ></v-text-field>
+                  <v-text-field
+                    prepend-icon="person"
+                    v-model="name"
+                    :rules="[v => !!v || 'Nome Obrigatório']"
+                    label="Nome do Utilizador"
                     type="text"
                     required
                   ></v-text-field>
@@ -30,9 +38,8 @@
                 </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn dark round color="orange darken-4" @click="register" ><span class="white--text">Registar</span></v-btn>
                 <v-spacer></v-spacer>
-                <v-btn dark round color="blue darken-1" @click="login" ><span class="white--text">Login</span></v-btn>
+                <v-btn dark round color="blue darken-1" @click="register" ><span class="white--text">Registar</span></v-btn>
               </v-card-actions>
             </v-card>
           </v-flex>
@@ -40,7 +47,7 @@
 
       <v-layout>
         <v-snackbar v-model="erro" color="red darken-4">
-          Erro no Login do Utilizador
+          Erro no Registo do Utilizador
           <v-btn dark flat @click="erro = false">Fechar</v-btn>
         </v-snackbar>
       </v-layout>
@@ -48,25 +55,26 @@
 </template>
 
 <script>
+var axios = require('axios')
 export default {
   data: () => ({
     erro: false,
     showPass: false,
     username: '',
+    name: '',
     password: ''
   }),
   methods: {
-    login: async function () {
+    register: async function () {
       let username = this.username
       let password = this.password
-      this.$store.dispatch('login', { username, password })
-        .then(() => this.$router.push('/projects'))
-        .catch(() => {
-          this.erro = true
+      let name = this.name
+
+      await axios.post('http://localhost:7001/register', { username: username, nome: name, password: password })
+        .then(res => {
+          if (res.data.validation === false) { this.erro = true } else { this.$router.push('/login') }
         })
-    },
-    register: () => {
-      this.$router.push('/regist')
+        .catch(this.erro = true)
     }
   }
 }

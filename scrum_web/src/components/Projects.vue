@@ -141,7 +141,7 @@ var axios = require('axios')
 export default {
   data: () => ({
     erro: false,
-    errMess: "",
+    errMess: '',
     search: '',
     lista: [],
     pedidos: [],
@@ -175,26 +175,26 @@ export default {
         })
         .catch(() => {
           this.erro = true
-          this.errMess = "Erro na adição de Projeto"
+          this.errMess = 'Erro na adição de Projeto'
         })
     },
-    aceitar: async function(id) {
-      var response = await axios.get('http://localhost:7001/aceitar/'+id)
-      if (response.data.validation === true) { 
+    aceitar: async function (id) {
+      var response = await axios.get('http://localhost:7001/aceitar/' + id)
+      if (response.data.validation === true) {
         this.loadPedidos()
         this.loadTable()
-      } else { 
-        this.erro = false 
-        this.errMess = "Erro a aceitar Pedido"
+      } else {
+        this.erro = false
+        this.errMess = 'Erro a aceitar Pedido'
       }
     },
-    recusar: async function(id) {
-      var response = await axios.get('http://localhost:7001/recusar/'+id)
-      if (response.data.validation === true) { 
+    recusar: async function (id) {
+      var response = await axios.get('http://localhost:7001/recusar/' + id)
+      if (response.data.validation === true) {
         this.loadPedidos()
-      } else { 
-        this.erro = false 
-        this.errMess = "Erro a recusar Pedido"
+      } else {
+        this.erro = false
+        this.errMess = 'Erro a recusar Pedido'
       }
     },
     loadTable: async function () {
@@ -233,15 +233,13 @@ export default {
       var index = this.lista.findIndex(elem => elem.id === item.id)
       if (index !== -1) {
         var response = await axios.get('http://localhost:7001/projetos/remover/' + this.lista[index].id)
-        if (response.data.validation === true) { this.lista.splice(index, 1) } 
-        else { 
+        if (response.data.validation === true) { this.lista.splice(index, 1) } else {
           this.erro = false
-          this.errMess = "Erro a remover Projeto"
+          this.errMess = 'Erro a remover Projeto'
         }
-      } 
-      else { 
-          this.erro = false
-          this.errMess = "Erro a remover Projeto"
+      } else {
+        this.erro = false
+        this.errMess = 'Erro a remover Projeto'
       }
     },
     rowClicked: function (item) {

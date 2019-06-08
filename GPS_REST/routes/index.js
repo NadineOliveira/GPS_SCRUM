@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var passport = require("passport")
 var jwt = require('jsonwebtoken')
+var bcrypt = require('bcryptjs');
+var UtilizadorController = require('../controllers/utilizadores')
 var ParticipaController = require('../controllers/participa')
 var ProjetoController = require('../controllers/projetos')
 var SprintsController = require('../controllers/sprints')
@@ -33,11 +35,28 @@ router.post('/login', async(req, res, next) => {
     })(req, res, next)
 })
 
-router.post('/register', passport.authenticate('registo', {
-    session: false,
-    successRedirect: '/',
-    failureRedirect: '/'
-}))
+router.post('/register', async (req, res, next) => {
+    try {
+        if (typeof req.body.username === "undefined" && !req.body.username)
+        res.status(500).send({ validation: false })
+    if (typeof req.body.password === "undefined" && !req.body.password)
+        res.status(500).send({ validation: false })
+    if (typeof req.body.nome === "undefined" && !req.body.name)
+        res.status(500).send({ validation: false })
+
+    let username = req.body.username
+    let name = req.body.nome
+    let utype = 1
+
+    var hash = await bcrypt.hash(req.body.password, 10)
+    let user = await UtilizadorController.insert(username, name, hash, utype)
+
+    res.status(200).send(user)
+    }
+    catch(erro) {
+        res.status(500).send({ validation: false })
+    }
+})
 
 router.get('/logout', passport.authenticate('jwt', { session: false }), (req, res, next) => {
     req.session.destroy(err => {
@@ -97,7 +116,6 @@ router.post("/tarefasUser/:pid", passport.authenticate('jwt', { session: false }
     var user = req.body.usern;
     var id = req.params.pid
     var val = await TarefasController.countTarefasUser(id, user);
-    console.log(val)
     res.status(200).send(val)
 })
 
@@ -106,10 +124,8 @@ router.get("/grupo/:pid", passport.authenticate('jwt', { session: false }), asyn
     var resp = await ParticipaController.getUsers(id);
     var nome = [];
     for (i in resp) {
-        console.log("i: " + i);
         var user = resp[i].dataValues.username
         var val = await TarefasController.countTarefasUser(id, user);
-        console.log(val)
         resp[i].dataValues.nr = val;
         nome.push({ name: user, count: val })
     }
@@ -174,7 +190,8 @@ router.post('/grupo/:pid', passport.authenticate('jwt', { session: false }), asy
     var idProjeto = req.params.pid;
 
     var owner = await ProjetoController.getProjeto(idProjeto);
-    if (owner.criador == user) {
+
+    if (owner[0].dataValues.criador == req.user.username) {
         var val = await ParticipaController.participaUserAll(idProjeto, user);
         if (val === true)
             res.status(500).send({ validation: false })
@@ -213,8 +230,32 @@ router.get("/:pid/users/:tid", passport.authenticate('jwt', { session: false }),
         res.status(200).send({ validation: false })
     else {
         var resp = await RealizaController.getUsersTarefas(tid);
-        res.status(200).send(resp)
+        var list = []
+        for (i in resp) {
+            
+            var user = resp[i].dataValues.username
+            list.push(user)
+        }
+        res.status(200).send(list)
     }
+})
+
+router.get("/concluir/:tid",passport.authenticate('jwt', { session: false }), async(req, res, next) => {
+    var user = req.user.username;
+    var tid = req.params.tid
+
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+
+    date = yyyy + '-' + mm + '-' + dd;
+
+    var val = await TarefasController.concluirTarefa(tid,date)
+    if(val === false)
+        res.status(500).send({validation: false})
+    else
+        res.status(200).send({validation: true})
 })
 
 module.exports = router;

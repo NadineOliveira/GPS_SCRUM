@@ -30,12 +30,12 @@ module.exports.participaUserAll = async function(id,user){
             idProjeto: id
         }
     }).then(res => {
-        if (res === undefined || res.length == 0) {
+        if (res === undefined || res.length === 0) {
             val = false
         } else 
             val = true
     }).catch(e => {
-        val = false
+        val = true
     })
     return val;
 }

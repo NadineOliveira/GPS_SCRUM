@@ -4,6 +4,7 @@ import store from './store.js'
 import Home from './views/Home.vue'
 import About from './views/About.vue'
 import Login from './components/Login.vue'
+import Regist from './components/Regist.vue'
 import Projects from './components/Projects.vue'
 import Project from '@/views/Project.vue'
 
@@ -21,6 +22,11 @@ let router = new Router({
       path: '/login',
       name: 'login',
       component: Login
+    },
+    {
+      path: '/regist',
+      name: 'regist',
+      component: Regist
     },
     {
       path: '/project/:idProjeto',

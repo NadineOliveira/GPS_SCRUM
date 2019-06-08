@@ -23,37 +23,6 @@ passport.use('login', new localStrategy ({
     }
 }))
 
-passport.use('registo', new localStrategy ({
-    usernameField : 'username',
-    passwordField : 'password',
-    passReqToCallback : true
-}, async (req, username, password, done) => {
-    try {
-        
-        if (typeof username === "undefined" && !email)
-            throw new Error ("Email não definido")
-        if (typeof password === "undefined" && !password)
-            throw new Error ("Password não definida")
-        if (typeof req.body.nome === "undefined" && !req.body.name)
-            throw new Error ("Nome não definido")
-
-        let name = req.body.nome
-        let utype = 1
-
-        var hash = await bcrypt.hash(password, 10)
-
-        let user = await Utilizador.insert({username, hash, name, utype})
-
-        if (!user)
-            throw new Error("Erro a criar utilizador!")
-
-        return done(null, user)
-    }
-    catch(erro) {
-        return done(erro,false, {message: erro})
-    }
-}))
-
 // Verificação do Token
 var JWTstrategy = require('passport-jwt').Strategy
 var ExtractJWT = require('passport-jwt').ExtractJwt

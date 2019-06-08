@@ -1,8 +1,19 @@
 var Utilizador = require('./ModelConnections').utilizador;
 var bcrypt = require('bcryptjs');
 
-module.exports.insert = user => {
-  return Utilizador.create(user)
+module.exports.insert = async (username, name, password, utype) => {
+  var result;
+  await Utilizador.create({
+    username: username,
+    nome: name,
+    password: password,
+    tipo_utilizador: utype
+  }).then(res => {
+                result = {validation: true};
+    }).catch(err => {
+        result = {validation: false}
+    });
+    return result;
 } 
 
 module.exports.getAllUtilizadores = async function(){

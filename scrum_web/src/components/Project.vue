@@ -35,21 +35,29 @@
                   v-for="subItem in item.tarefas"
                   :key="subItem.idTarefa"
                 >
+                  <v-list-tile-action v-if='subItem.data === "NAO"'>
+                       <v-tooltip left>
+                        <template v-slot:activator="{ on }">
+                          <v-icon v-on="on" @click="concluirTarefa(subItem.idTarefa)">check</v-icon>
+                        </template>
+                        <span>Concluir Tarefa</span>
+                      </v-tooltip>
+                  </v-list-tile-action>
                   <v-list-tile-content>
                     <v-list-tile-title>{{ subItem.descricao }}</v-list-tile-title>
                     <v-list-tile-sub-title v-if='subItem.data !== "NAO"'>{{ "Concluido a "+ subItem.data }}</v-list-tile-sub-title>
                     <v-list-tile-sub-title v-else>
-                        {{getUsers(subItem.idTarefa)}}
+                        <v-btn small @click="getUsers(subItem.idTarefa); dialogMembros=true">Consultar Membros</v-btn>
                     </v-list-tile-sub-title>
                   </v-list-tile-content>
-                  <v-list-tile-action>
+                  <v-list-tile-action v-if='subItem.data === "NAO"'>
                        <v-tooltip left>
                         <template v-slot:activator="{ on }">
                           <v-icon v-on="on" @click="dialogUserTarefa=true; idTarefa = subItem.idTarefa">add</v-icon>
                         </template>
                         <span>Adicionar novo Utilizador à tarefa</span>
                       </v-tooltip>
-                    </v-list-tile-action>
+                  </v-list-tile-action>
 
                 </v-list-tile>
 
@@ -162,7 +170,7 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="green darken-1" flat @click="dialogTarefa = false">Fechar</v-btn>
-            <v-btn color="green darken-1" flat @click="novaTarefa">Guardar</v-btn>
+            <v-btn color="green darken-1" flat @click="criarTarefa">Guardar</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -235,6 +243,28 @@
       </v-dialog>
     </v-layout>
 
+    <v-layout row justify-center>
+      <v-dialog v-model="dialogMembros" persistent max-width="290">
+        <v-card>
+          <v-card-title class="headline">Lista de Membros da Tarefa</v-card-title>
+          <v-list>
+            <v-list-tile
+              v-for="item in membrosTarefa"
+              :key="item"
+              no-avatar
+            >
+              <v-list-tile-content>
+                <v-list-tile-title v-text="item"></v-list-tile-title>
+              </v-list-tile-content>
+            </v-list-tile>
+          </v-list>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" flat @click="dialogMembros = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-layout>
 
     <v-flex xs12 ma-1>
         <v-card>
@@ -243,22 +273,18 @@
           </v-card-title>
 
           <v-card-text>
-            <v-list>
-              <v-list-group
-                v-for="(item) in listaMilestones"
-                :key="item.idMilestone"
-                no-action
-              >
-                <template v-slot:activator>
-                  <v-list-tile>
-                    <v-list-tile-content>
+            <v-list two-line>
+              <template  v-for="(item) in listaMilestones">
+                <v-list-tile
+                  :key="item.idMilestone"
+                  no-action
+                >
+                  <v-list-tile-content>
                       <v-list-tile-title>{{ item.nome }}</v-list-tile-title>
                       <v-list-tile-sub-title>{{ 'Data Limite: '+item.data_limite }}</v-list-tile-sub-title>
                     </v-list-tile-content>
-                  </v-list-tile>
-                </template>
-
-              </v-list-group>
+                </v-list-tile>
+              </template>
             </v-list>
           </v-card-text>
 
@@ -302,7 +328,7 @@
                 </v-menu>
               </template>
             </template>
-            
+
           </v-calendar>
                 <v-flex
         sm4
@@ -338,7 +364,7 @@
           </v-card-title>
           <template>
             <div id="app">
-            <pie-chart :data="this.chartData"></pie-chart>
+            <pie-chart v-if="renderComponent" :data="this.chartData"></pie-chart>
             </div>
           </template>
         </v-card>
@@ -352,7 +378,7 @@
       <v-btn
         dark
         flat
-        @click="erro = false"
+        @click="erro = false; this.$router.go()"
       >
         Fechar
       </v-btn>
@@ -360,17 +386,16 @@
   </v-container>
 </template>
 
-
 <script>
 
+import PieChart from './PieChart'
 var axios = require('axios')
-import PieChart from "./PieChart";
 
 export default {
   props: ['idProjeto'],
   components: {
-      PieChart
-    },
+    PieChart
+  },
   data: () => ({
     erro: false,
     erroMess: '',
@@ -380,6 +405,9 @@ export default {
     dialogGroup: false,
     dialogMilestone: false,
     dialogUserTarefa: false,
+    dialogMembros: false,
+    renderComponent: true,
+    membrosTarefa: [],
     descricao: '',
     novoUsername: '',
     novoUserTarefa: '',
@@ -389,7 +417,7 @@ export default {
     grupo: [],
     grupo2: [],
     listaSprints: [],
-    listaUtilizadores:[],
+    listaUtilizadores: [],
     listaMilestones: [],
     type: 'month',
     start: '2019-06-01',
@@ -415,18 +443,18 @@ export default {
       }
     ],
     events: {},
-    
+
     chartData: {
-        labels: [],
-        datasets:[ 
-          {
-            label: "",
-            backgroundColor: ["#41B883", "#E46651"],
-            data: []
-          }
-        ]
-        
-      }
+      labels: [],
+      datasets: [
+        {
+          label: '',
+          backgroundColor: ['#41B883', '#E46651', '#3873BF', '#EE0DDA', '#1ADE5B', '#41B883', '#E46651', '#3873BF', '#EE0DDA', '#1ADE5B'],
+          data: []
+        }
+      ]
+
+    }
   }),
   computed: {
     // convert the list of events into a map of lists keyed by date
@@ -443,11 +471,10 @@ export default {
   },
   methods: {
     loadGroup: async function (id) {
+      this.renderComponent = false
       var res = await axios.get('http://localhost:7001/grupo/' + id)
-      alert(JSON.stringify(res.data))
       this.grupo = JSON.parse(JSON.stringify(res.data.resp))
-      for(var i=0; i<res.data.nome.length;i++){
-        alert(JSON.stringify(res.data.nome[i]))
+      for (var i = 0; i < res.data.nome.length; i++) {
         this.chartData.datasets[0].data.push(res.data.nome[i].count)
       }
       this.grupo2 = res.data.resp.map(user => {
@@ -455,17 +482,18 @@ export default {
         return {
           value: user.nome,
           key: user.username
-        };
-      });
+        }
+      })
+
+      this.renderComponent = true
     },
     loadSprints: async function (id) {
       var res = await axios.get('http://localhost:7001/sprints/' + id)
-        this.listaSprints = JSON.parse(JSON.stringify(res.data.sprints))
+      this.listaSprints = JSON.parse(JSON.stringify(res.data.sprints))
     },
     loadMilestones: async function (id) {
       var res = await axios.get('http://localhost:7001/milestones/' + id)
       this.listaMilestones = JSON.parse(JSON.stringify(res.data))
-
     },
     goProjetos: function () {
       this.$router.push('/projects')
@@ -483,6 +511,34 @@ export default {
           this.dialogSprint = false
           this.erro = true
           this.erroMess = 'Erro a adicionar Sprint'
+        })
+    },
+    criarTarefa: async function () {
+      var tar = {
+        descricao: this.descricao,
+        idSprint: this.idSprint
+      }
+      await axios.post('http://localhost:7001/tarefa/' + this.idProjeto, tar)
+        .then(res => {
+          this.listaSprints[this.indexSprint].tarefas.push(res.data)
+          this.descricao = ''
+          this.dialogTarefa = false
+        })
+        .catch(() => {
+          this.descricao = ''
+          this.dialogTarefa = false
+          this.erro = true
+          this.erroMess = 'Erro a adicionar Tarefa'
+        })
+    },
+    concluirTarefa: async function (idTarefa) {
+      await axios.get('http://localhost:7001/concluir/' + idTarefa)
+        .then(res => {
+          this.$router.go()
+        })
+        .catch(() => {
+          this.erro = true
+          this.erroMess = 'Erro a concluir tarefa'
         })
     },
     adicionarMilestone: async function () {
@@ -507,7 +563,7 @@ export default {
       this.dialogTarefa = true
     },
     addUserTarefa: async function () {
-      await axios.post('http://localhost:7001/userT/', {username: this.novoUserTarefa, idTarefa: this.idTarefa})
+      await axios.post('http://localhost:7001/userT/', { username: this.novoUserTarefa, idTarefa: this.idTarefa })
         .then(res => {
           this.listaUtilizadores.push(res.data)
           this.dialogUserTarefa = false
@@ -519,32 +575,8 @@ export default {
         })
     },
     getUsers: async function (id) {
-       await axios.get('http://localhost:7001/'+this.idProjeto+'/users/'+id).then(res => {
-        string = ""
-        for( i in res.data)
-          string += res.data[i].username + " | "
-        
-        return string
-      })
-      .catch(() => {return "Erro"}) 
-    },
-    novaTarefa: async function () {
-      var tar = {
-        descricao: this.descricao,
-        idSprint: this.idSprint
-      }
-      await axios.post('http://localhost:7001/tarefa/' + this.idProjeto, tar)
-        .then(res => {
-          this.listaSprints[this.indexSprint].tarefas.push(res.data)
-          this.descricao = ''
-          this.dialogTarefa = false
-        })
-        .catch(() => {
-          this.descricao = ''
-          this.dialogTarefa = false
-          this.erro = true
-          this.erroMess = 'Erro a adicionar Tarefa'
-        })
+      var res = await axios.get('http://localhost:7001/' + this.idProjeto + '/users/' + id)
+      this.membrosTarefa = JSON.parse(JSON.stringify(res.data))
     },
     novoMembro: async function () {
       await axios.post('http://localhost:7001/grupo/' + this.idProjeto, { username: this.novoUsername })
@@ -561,8 +593,8 @@ export default {
     },
     open (event) {
       alert(event.title)
-    },
-    
+    }
+
   }
 }
 
@@ -593,6 +625,6 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
-  
+
 }
 </style>

@@ -35,6 +35,15 @@
           </v-list-tile-content>
         </v-list-tile>
 
+        <v-list-tile v-if="!isLoggedIn" @click="register">
+          <v-list-tile-action>
+            <v-icon>person_add</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Register</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+
         <v-list-tile v-if="isLoggedIn" @click="projetos">
           <v-list-tile-action>
             <v-icon>reorder</v-icon>
@@ -83,6 +92,9 @@ export default {
     },
     login: function () {
       this.$router.push('/login')
+    },
+    register: function () {
+      this.$router.push('/regist')
     },
     logout: function () {
       this.$store.dispatch('logout')

@@ -4,6 +4,19 @@ var Realiza = require('./ModelConnections').realiza
 
 var db = require('./ModelConnections').db;
 
+module.exports.concluirTarefa = async function(id, data) {
+    var result;
+    await Tarefa.update(
+        {data: data},
+        {where: {idTarefa: id}}
+    ).then(() => {
+        result = { validation: true }
+    }).catch(() => {
+        result = { validation: false }
+    })
+    return result
+}
+
 module.exports.addTarefa = async function(desc, idSprint) {
     var result;
     await Tarefa.create({
