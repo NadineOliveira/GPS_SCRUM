@@ -104,13 +104,17 @@ router.post("/tarefasUser/:pid", passport.authenticate('jwt', { session: false }
 router.get("/grupo/:pid", passport.authenticate('jwt', { session: false }), async(req, res, next) => {
     var id = req.params.pid
     var resp = await ParticipaController.getUsers(id);
+    var nome = [];
     for (i in resp) {
+        console.log("i: " + i);
         var user = resp[i].dataValues.username
         var val = await TarefasController.countTarefasUser(id, user);
+        console.log(val)
         resp[i].dataValues.nr = val;
+        nome.push({ name: user, count: val })
     }
-    console.log(resp)
-    res.status(200).send(resp)
+    //console.log(resp)
+    res.status(200).send({ resp: resp, nome: nome })
 })
 
 router.post('/sprint', passport.authenticate('jwt', { session: false }), async(req, res, next) => {

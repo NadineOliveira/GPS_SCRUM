@@ -444,16 +444,19 @@ export default {
   methods: {
     loadGroup: async function (id) {
       var res = await axios.get('http://localhost:7001/grupo/' + id)
-      this.grupo = JSON.parse(JSON.stringify(res.data))
-      this.grupo2 = res.data.map(user => {
+      alert(JSON.stringify(res.data))
+      this.grupo = JSON.parse(JSON.stringify(res.data.resp))
+      for(var i=0; i<res.data.nome.length;i++){
+        alert(JSON.stringify(res.data.nome[i]))
+        this.chartData.datasets[0].data.push(res.data.nome[i].count)
+      }
+      this.grupo2 = res.data.resp.map(user => {
         this.chartData.labels.push(user.nome)
-        this.chartData.datasets[0].data.push(user.nr)
         return {
           value: user.nome,
           key: user.username
         };
       });
-      alert(JSON.stringify(this.chartData))
     },
     loadSprints: async function (id) {
       var res = await axios.get('http://localhost:7001/sprints/' + id)
