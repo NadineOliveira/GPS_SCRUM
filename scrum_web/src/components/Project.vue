@@ -331,6 +331,19 @@
         </v-card>
       </v-flex>
 
+      <v-flex xs6 ma-1>
+        <v-card>
+          <v-card-title primary-title>
+            <h3>Tarefas</h3>
+          </v-card-title>
+          <template>
+            <div id="app">
+            <pie-chart :data="this.chartData"></pie-chart>
+            </div>
+          </template>
+        </v-card>
+      </v-flex>
+
   <v-snackbar
       v-model="erro"
       color="red"
@@ -347,11 +360,17 @@
   </v-container>
 </template>
 
+
 <script>
 
 var axios = require('axios')
+import PieChart from "./PieChart";
+
 export default {
   props: ['idProjeto'],
+  components: {
+      PieChart
+    },
   data: () => ({
     erro: false,
     erroMess: '',
@@ -395,7 +414,19 @@ export default {
         dates: []
       }
     ],
-    events: {}
+    events: {},
+    
+    chartData: {
+        labels: [],
+        datasets:[ 
+          {
+            label: "",
+            backgroundColor: ["#41B883", "#E46651"],
+            data: []
+          }
+        ]
+        
+      }
   }),
   computed: {
     // convert the list of events into a map of lists keyed by date
@@ -415,11 +446,14 @@ export default {
       var res = await axios.get('http://localhost:7001/grupo/' + id)
       this.grupo = JSON.parse(JSON.stringify(res.data))
       this.grupo2 = res.data.map(user => {
+        this.chartData.labels.push(user.nome)
+        this.chartData.datasets[0].data.push(user.nr)
         return {
           value: user.nome,
           key: user.username
         };
       });
+      alert(JSON.stringify(this.chartData))
     },
     loadSprints: async function (id) {
       var res = await axios.get('http://localhost:7001/sprints/' + id)
@@ -525,8 +559,10 @@ export default {
     open (event) {
       alert(event.title)
     },
+    
   }
 }
+
 </script>
 
 <style lang="stylus" scoped>
@@ -544,4 +580,16 @@ export default {
     cursor: pointer;
     margin-bottom: 1px;
   }
+</style>
+
+<style>
+#app {
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+  
+}
 </style>

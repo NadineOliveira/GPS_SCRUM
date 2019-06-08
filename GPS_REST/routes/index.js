@@ -93,9 +93,23 @@ router.get("/milestones/:pid", passport.authenticate('jwt', { session: false }),
     res.status(200).send(val)
 })
 
+router.post("/tarefasUser/:pid", passport.authenticate('jwt', { session: false }), async(req, res, next) => {
+    var user = req.body.usern;
+    var id = req.params.pid
+    var val = await TarefasController.countTarefasUser(id, user);
+    console.log(val)
+    res.status(200).send(val)
+})
+
 router.get("/grupo/:pid", passport.authenticate('jwt', { session: false }), async(req, res, next) => {
     var id = req.params.pid
     var resp = await ParticipaController.getUsers(id);
+    for (i in resp) {
+        var user = resp[i].dataValues.username
+        var val = await TarefasController.countTarefasUser(id, user);
+        resp[i].dataValues.nr = val;
+    }
+    console.log(resp)
     res.status(200).send(resp)
 })
 
