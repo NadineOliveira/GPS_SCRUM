@@ -450,6 +450,7 @@ export default {
     },
     adicionarMilestone: async function () {
       this.novoMilestone.idProjeto = this.idProjeto
+      console.log(JSON.stringify(this.novoMilestone))
       await axios.post('http://localhost:7001/milestone/', this.novoMilestone)
         .then(res => {
           this.listaMilestones.push(res.data)

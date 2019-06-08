@@ -140,6 +140,17 @@ router.post('/userT', passport.authenticate('jwt', { session: false }), async(re
 
 })
 
+router.post('/milestone', passport.authenticate('jwt', { session: false }), async(req, res, next) => {
+    var nome = req.body.nome;
+    var data_limite = req.body.data_limite;
+    var idProjeto = req.body.idProjeto;
+    var username = req.user.username;
+    await MilestonesController.addMilestone(nome, data_limite, idProjeto, username).then(r => {
+        res.status(200).send(r)
+    }).catch(err => { res.status(500).send("Milestone não adicionado") });
+
+})
+
 router.post('/grupo/:pid', passport.authenticate('jwt', { session: false }), async(req, res, next) => {
     var user = req.body.username;
     var idProjeto = req.params.pid;

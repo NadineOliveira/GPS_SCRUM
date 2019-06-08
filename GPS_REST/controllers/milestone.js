@@ -18,7 +18,7 @@ module.exports.addMilestone = async function(nome, data, idP, username) {
     await Milestones.create({
         nome: nome,
         data_limite: data,
-        idProjeto: idProjeto,
+        idProjeto: idP,
         username: username
     }).then(s => {
         result = s;
